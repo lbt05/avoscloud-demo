@@ -1,9 +1,7 @@
 package com.avoscloud.beijing.push.demo.keepalive;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -14,41 +12,49 @@ import android.graphics.BitmapFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.avos.avoscloud.AVMessageReceiver;
+import com.avos.avoscloud.AVGroupMessageReceiver;
+import com.avos.avoscloud.Group;
 import com.avos.avoscloud.LogUtil;
 import com.avos.avoscloud.Session;
 import com.avos.avospush.notification.NotificationCompat;
 
-public class ChatDemoMessageReceiver extends AVMessageReceiver {
-
-  private final Queue<String> failedMessage = new LinkedList<String>();
+public class ChatDemoGroupMessageReceiver extends AVGroupMessageReceiver {
 
   @Override
-  public void onSessionOpen(Context context, Session session) {
-
-    this.sendOpenIntent(context);
+  public void onJoined(Context context, Group group) {
+    LogUtil.avlog.d(group.getGroupId() + " Joined");
+    Intent i = new Intent(context, GroupChatActivity.class);
+    i.putExtra(GroupChatActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET, group.getGroupId());
+    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    context.startActivity(i);
   }
 
   @Override
-  public void onSessionPaused(Context context, Session session) {
-    LogUtil.avlog.d("这里掉线了");
+  public void onInvited(Context context, Group group, String byPeerId) {
+    LogUtil.avlog.d("you're invited to " + group.getGroupId() + " by " + byPeerId);
   }
 
   @Override
-  public void onSessionResumed(Context context, Session session) {
-    LogUtil.avlog.d("重新连接上了");
-    while (!failedMessage.isEmpty()) {
-      String msg = failedMessage.poll();
-
-      session.sendMessage(msg, session.getAllPeers(), false);
-    }
+  public void onKicked(Context context, Group group, String byPeerId) {
+    LogUtil.avlog.d("you're kicked from " + group.getGroupId() + " by " + byPeerId);
   }
 
   @Override
-  public void onMessage(Context context, Session session, String msg, String fromPeerId) {
+  public void onMessageSent(Context context, Group group, String message) {
+    LogUtil.avlog.d(message + " sent");
+  }
+
+  @Override
+  public void onMessageFailure(Context context, Group group, String message) {
+    LogUtil.avlog.d(message + " failure");
+  }
+
+  @Override
+  public void onMessage(Context context, Group group, String msg, String fromPeerId) {
     JSONObject j = JSONObject.parseObject(msg);
     ChatMessage message = new ChatMessage();
-    MessageListener listener = sessionMessageDispatchers.get(fromPeerId);
+    MessageListener listener = groupMessageDispatchers.get(group.getGroupId());
     /*
      * 这里是demo中自定义的数据格式，在你自己的实现中，可以完全自由的通过json来定义属于你自己的消息格式
      * 
@@ -70,7 +76,7 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         String ctnt = j.getString("dn") + "：" + j.getString("msg");
-        Intent resultIntent = new Intent(context, PrivateConversationActivity.class);
+        Intent resultIntent = new Intent(context, GroupChatActivity.class);
         resultIntent.putExtra(PrivateConversationActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET,
             fromPeerId);
         resultIntent.putExtra(Session.AV_SESSION_INTENT_DATA_KEY, JSON.toJSONString(message));
@@ -81,7 +87,7 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
 
         Notification notification =
             new NotificationCompat.Builder(context)
-                .setContentTitle(context.getString(R.string.notif_title))
+                .setContentTitle(context.getString(R.string.notif_group))
                 .setContentText(ctnt)
                 .setContentIntent(pi)
                 .setSmallIcon(R.drawable.ic_launcher)
@@ -94,49 +100,43 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
         listener.onMessage(JSON.toJSONString(message));
       }
     }
+    LogUtil.avlog.d(message + " receiver");
   }
 
   @Override
-  public void onMessageSent(Context context, Session session, String msg, List<String> receivers) {
-    LogUtil.avlog.d("message sent :" + msg);
+  public void onQuit(Context context, Group group) {
+    LogUtil.avlog.d(group.getGroupId() + " quit");
   }
 
   @Override
-  public void onMessageFailure(Context context, Session session, String msg, List<String> receivers) {
-    LogUtil.avlog.d("message failed :" + msg);
-    this.failedMessage.offer(msg);
+  public void onReject(Context context, Group group, String op, List<String> targetIds) {
+    LogUtil.avlog.d(op + ":" + targetIds + " rejected");
   }
 
   @Override
-  public void onStatusOnline(Context context, Session session, List<String> peerIds) {
-    LogUtil.avlog.d("status online :" + peerIds.toString());
+  public void onMemberJoin(Context context, Group group, List<String> joinedPeerIds) {
+    LogUtil.avlog.d(joinedPeerIds + " join " + group.getGroupId());
+
   }
 
   @Override
-  public void onStatusOffline(Context context, Session session, List<String> peerIds) {
-    LogUtil.avlog.d("status offline :" + peerIds.toString());
+  public void onMemberLeft(Context context, Group group, List<String> leftPeerIds) {
+    LogUtil.avlog.d(leftPeerIds + " left " + group.getGroupId());
   }
 
   @Override
-  public void onError(Context context, Session session, Throwable e) {
-    LogUtil.log.e("session error", (Exception) e);
+  public void onError(Context context, Group group, Throwable e) {
+    LogUtil.log.e("", (Exception) e);
   }
 
-  private void sendOpenIntent(Context context) {
-    Intent intent = new Intent(context, ChatTargetActivity.class);
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-    context.startActivity(intent);
+  public static void registerGroupListener(String groupId, MessageListener listener) {
+    groupMessageDispatchers.put(groupId, listener);
   }
 
-  public static void registerSessionListener(String peerId, MessageListener listener) {
-    sessionMessageDispatchers.put(peerId, listener);
+  public static void unregisterGroupListener(String groupId) {
+    groupMessageDispatchers.remove(groupId);
   }
 
-  public static void unregisterSessionListener(String peerId) {
-    sessionMessageDispatchers.remove(peerId);
-  }
-
-  static HashMap<String, MessageListener> sessionMessageDispatchers =
+  static HashMap<String, MessageListener> groupMessageDispatchers =
       new HashMap<String, MessageListener>();
 }

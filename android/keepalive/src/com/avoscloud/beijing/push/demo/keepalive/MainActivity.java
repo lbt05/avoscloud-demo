@@ -64,31 +64,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     SharedPreferences spr = PreferenceManager.getDefaultSharedPreferences(this);
     spr.edit().putString("username", name).commit();
+    AVInstallation currentInstallation = AVInstallation.getCurrentInstallation();
+
+    currentInstallation.put("name", name);
+
+    currentInstallation.saveInBackground();
 
     // Intent intent = new Intent(this, HeartBeatActivity.class);
     // startActivity(intent);
-    AVQuery<AVObject> aviq = new AVQuery<AVObject>("_Installation");
     final String selfId = AVInstallation.getCurrentInstallation().getInstallationId();
-    aviq.whereEqualTo("valid", true).findInBackground(new FindCallback<AVObject>() {
-      @Override
-      public void done(List<AVObject> installations, AVException exception) {
-        if (null == exception) {
-          List<String> peerIds = new LinkedList<String>();
-          for (AVObject object : installations) {
-            if (!selfId.equals(object.getString("installationId"))
-                && object.getString("installationId") != null) {
-              peerIds.add(object.getString("installationId"));
-            }
-          }
-          Session session = SessionManager.getInstance(selfId);
-          session
-              .setSignatureFactory(new KeepAliveSignatureFactory(AVOSCloud.applicationId, selfId));
-          session.open(selfId, peerIds);
-        } else {
-          Toast.makeText(MainActivity.this, "查询异常", Toast.LENGTH_SHORT).show();
-        }
-      }
-    });
-
+    List<String> peerIds = new LinkedList<String>();
+    Session session = SessionManager.getInstance(selfId);
+    session.setSignatureFactory(new KeepAliveSignatureFactory(AVOSCloud.applicationId, selfId));
+    session.open(selfId, peerIds);
   }
 }

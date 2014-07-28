@@ -102,4 +102,47 @@ public class KeepAliveSignatureFactory implements SignatureFactory {
     return new String(hexChars);
   }
 
+  @Override
+  public Signature createGroupSignature(String groupId, String peerId, List<String> targetPeerIds,
+      String action) {
+    Signature s = new Signature();
+
+    long timestamp = System.currentTimeMillis() / 1000;
+    String nonce = "ForeverAlone";
+    List<String> watchIdsCopy = new ArrayList<String>();
+    watchIdsCopy.addAll(targetPeerIds);
+
+    s.setTimestamp(timestamp);
+    s.setNonce(nonce);
+    s.setSignedPeerIds(watchIdsCopy);
+
+    List<String> signatureElements = new ArrayList<String>();
+    signatureElements.add(appId);
+
+    signatureElements.add(selfPeerId);
+
+
+    Collections.sort(watchIdsCopy);
+
+    signatureElements.add(groupId);
+
+    signatureElements.add(action);
+
+    signatureElements.add(TextUtils.join(":", watchIdsCopy));
+
+    signatureElements.add(String.valueOf(timestamp));
+
+    signatureElements.add(nonce);
+
+    /*
+     * 此处请一定不要直接复制黏贴到您的代码中
+     * 
+     * 在真实的产品中间，请尽量使用服务器端数据，完成这一步signature赋值操作，以保证服务器安全性
+     */
+    String sig = hmacSHA1(TextUtils.join(":", signatureElements), SUPER_POWER_KEY);
+    s.setSignature(sig);
+
+    return s;
+  }
+
 }
