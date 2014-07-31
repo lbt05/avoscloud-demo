@@ -59,6 +59,8 @@ public class GroupChatActivity extends Activity implements OnClickListener, Mess
     currentName = HTBApplication.lookupname(selfId);
     group = SessionManager.getInstance(selfId).getGroup(groupId);
 
+    // 您可以在这里读取本地的聊天记录，并且加载进来。
+    // 　我们会在未来加入这些代码
     sendBtn.setOnClickListener(this);
     if (!AVUtils.isBlankString(getIntent().getExtras()
         .getString(Session.AV_SESSION_INTENT_DATA_KEY))) {

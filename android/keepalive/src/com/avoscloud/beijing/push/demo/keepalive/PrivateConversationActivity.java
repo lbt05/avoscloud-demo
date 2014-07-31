@@ -42,6 +42,9 @@ public class PrivateConversationActivity extends Activity
     targetPeerId = this.getIntent().getStringExtra(DATA_EXTRA_SINGLE_DIALOG_TARGET);
     this.setTitle(HTBApplication.lookupname(targetPeerId));
 
+    // 您可以在这里读取本地的聊天记录，并且加载进来。
+    // 　我们会在未来加入这些代码
+
     chatList = (ListView) this.findViewById(R.id.avoscloud_chat_list);
     adapter = new ChatDataAdapter(this, messages);
     chatList.setAdapter(adapter);
