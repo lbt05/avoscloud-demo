@@ -16,8 +16,10 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
         <activity
-            android:name="MainActivity"
+            android:name=".MainActivity"
+            android:configChanges="keyboardHidden|orientation"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Keepalive" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,10 +28,24 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".HeartBeatActivity"
+            android:name=".ChatTargetActivity"
             android:configChanges="keyboardHidden|orientation"
-            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Keepalive" >
+        </activity>
+        <activity
+            android:name=".PrivateConversationActivity"
+            android:configChanges="keyboardHidden|orientation"
             android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Keepalive" >
+        </activity>
+        <activity
+            android:name=".GroupChatActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:launchMode="singleInstance"
+            android:noHistory="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Keepalive" >
         </activity>
@@ -39,7 +55,13 @@
         <receiver android:name=".ChatDemoMessageReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="com.avoscloud.session.action"/>
+                <action android:name="com.avoscloud.session.action" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".ChatDemoGroupMessageReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="com.avoscloud.group.action" />
             </intent-filter>
         </receiver>
         <receiver android:name="com.avos.avoscloud.AVBroadcastReceiver" >

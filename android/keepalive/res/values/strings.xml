@@ -11,6 +11,9 @@
     <string name="action_show_users">打印在线用户</string>
     <string name="action_trigger_push">触发一次离线消息推送</string>
     <string name="action_logout">登出</string>
+    
+    <string name="action_kick">踢光所有人，独霸聊天室</string>
+    <string name="action_invite">招呼点客人</string>
 
     <string name="confirm_exit">确定退出吗</string>
 
@@ -20,7 +23,11 @@
     <string name="joined_notif">%s 来了</string>
     <string name="left_notif">%s 走了</string>
 
-    <string name="notif_title">KeepAlive 聊天室有新消息</string>
+    <string name="notif_title">有新消息</string>
+    <string name="notif_group">聊天组有一个新消息</string>
 
     <string name="toast_login">登录中</string>
+    <string name="main_join_group">加入聊天室</string>
+    <string name="online_users">在线用户</string>
+    <string name="available_group">聊天组</string>
 </resources>
