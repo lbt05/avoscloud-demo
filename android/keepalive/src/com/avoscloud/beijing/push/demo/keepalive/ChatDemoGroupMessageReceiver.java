@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.avos.avoscloud.AVGroupMessage;
 import com.avos.avoscloud.AVGroupMessageReceiver;
 import com.avos.avoscloud.Group;
 import com.avos.avoscloud.LogUtil;
@@ -41,18 +42,18 @@ public class ChatDemoGroupMessageReceiver extends AVGroupMessageReceiver {
   }
 
   @Override
-  public void onMessageSent(Context context, Group group, String message) {
-    LogUtil.avlog.d(message + " sent");
+  public void onMessageSent(Context context, Group group, AVGroupMessage message) {
+    LogUtil.avlog.d(message.getMessage() + " sent");
   }
 
   @Override
-  public void onMessageFailure(Context context, Group group, String message) {
-    LogUtil.avlog.d(message + " failure");
+  public void onMessageFailure(Context context, Group group, AVGroupMessage message) {
+    LogUtil.avlog.d(message.getMessage() + " failure");
   }
 
   @Override
-  public void onMessage(Context context, Group group, String msg, String fromPeerId) {
-    JSONObject j = JSONObject.parseObject(msg);
+  public void onMessage(Context context, Group group, AVGroupMessage msg) {
+    JSONObject j = JSONObject.parseObject(msg.getMessage());
     ChatMessage message = new ChatMessage();
     MessageListener listener = groupMessageDispatchers.get(group.getGroupId());
     /*
@@ -78,7 +79,7 @@ public class ChatDemoGroupMessageReceiver extends AVGroupMessageReceiver {
         String ctnt = j.getString("dn") + "：" + j.getString("msg");
         Intent resultIntent = new Intent(context, GroupChatActivity.class);
         resultIntent.putExtra(PrivateConversationActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET,
-            fromPeerId);
+            msg.getFromPeerId());
         resultIntent.putExtra(Session.AV_SESSION_INTENT_DATA_KEY, JSON.toJSONString(message));
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 

@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.avos.avoscloud.AVMessage;
 import com.avos.avoscloud.AVMessageReceiver;
 import com.avos.avoscloud.LogUtil;
 import com.avos.avoscloud.Session;
@@ -21,7 +22,6 @@ import com.avos.avospush.notification.NotificationCompat;
 
 public class ChatDemoMessageReceiver extends AVMessageReceiver {
 
-  private final Queue<String> failedMessage = new LinkedList<String>();
 
   @Override
   public void onSessionOpen(Context context, Session session) {
@@ -37,18 +37,13 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
   @Override
   public void onSessionResumed(Context context, Session session) {
     LogUtil.avlog.d("重新连接上了");
-    while (!failedMessage.isEmpty()) {
-      String msg = failedMessage.poll();
-
-      session.sendMessage(msg, session.getAllPeers(), false);
-    }
   }
 
   @Override
-  public void onMessage(Context context, Session session, String msg, String fromPeerId) {
-    JSONObject j = JSONObject.parseObject(msg);
+  public void onMessage(Context context, Session session, AVMessage msg) {
+    JSONObject j = JSONObject.parseObject(msg.getMessage());
     ChatMessage message = new ChatMessage();
-    MessageListener listener = sessionMessageDispatchers.get(fromPeerId);
+    MessageListener listener = sessionMessageDispatchers.get(msg.getFromPeerId());
     /*
      * 这里是demo中自定义的数据格式，在你自己的实现中，可以完全自由的通过json来定义属于你自己的消息格式
      * 
@@ -72,7 +67,7 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
         String ctnt = j.getString("dn") + "：" + j.getString("msg");
         Intent resultIntent = new Intent(context, PrivateConversationActivity.class);
         resultIntent.putExtra(PrivateConversationActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET,
-            fromPeerId);
+            msg.getFromPeerId());
         resultIntent.putExtra(Session.AV_SESSION_INTENT_DATA_KEY, JSON.toJSONString(message));
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 
@@ -97,14 +92,13 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
   }
 
   @Override
-  public void onMessageSent(Context context, Session session, String msg, List<String> receivers) {
+  public void onMessageSent(Context context, Session session, AVMessage msg) {
     LogUtil.avlog.d("message sent :" + msg);
   }
 
   @Override
-  public void onMessageFailure(Context context, Session session, String msg, List<String> receivers) {
-    LogUtil.avlog.d("message failed :" + msg);
-    this.failedMessage.offer(msg);
+  public void onMessageFailure(Context context, Session session, AVMessage msg) {
+    LogUtil.avlog.d("message failed :" + msg.getMessage());
   }
 
   @Override
