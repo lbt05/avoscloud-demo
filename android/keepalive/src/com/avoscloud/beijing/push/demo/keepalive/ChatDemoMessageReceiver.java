@@ -1,9 +1,7 @@
 package com.avoscloud.beijing.push.demo.keepalive;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -19,6 +17,7 @@ import com.avos.avoscloud.AVMessageReceiver;
 import com.avos.avoscloud.LogUtil;
 import com.avos.avoscloud.Session;
 import com.avos.avospush.notification.NotificationCompat;
+import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage;
 
 public class ChatDemoMessageReceiver extends AVMessageReceiver {
 
@@ -42,7 +41,7 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
   @Override
   public void onMessage(Context context, Session session, AVMessage msg) {
     JSONObject j = JSONObject.parseObject(msg.getMessage());
-    ChatMessage message = new ChatMessage();
+    ChatDemoMessage message = new ChatDemoMessage();
     MessageListener listener = sessionMessageDispatchers.get(msg.getFromPeerId());
     /*
      * 这里是demo中自定义的数据格式，在你自己的实现中，可以完全自由的通过json来定义属于你自己的消息格式
@@ -52,11 +51,9 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
      * 用户的状态消息 {"st":"用户触发的状态信息","dn":"这是消息来源者的名字"}
      */
 
-    if (j.containsKey("msg")) {
+    if (j.containsKey("content")) {
 
-      message.setMessage(j.getString("msg"));
-      message.setType(1);
-      message.setUsername(j.getString("dn"));
+      message.fromAVMessage(msg);
       // 如果Activity在屏幕上不是active的时候就选择发送 通知
 
       if (listener == null) {
@@ -64,7 +61,7 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
         NotificationManager nm =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        String ctnt = j.getString("dn") + "：" + j.getString("msg");
+        String ctnt = message.getMessageFrom() + "：" + message.getMessageContent();
         Intent resultIntent = new Intent(context, PrivateConversationActivity.class);
         resultIntent.putExtra(PrivateConversationActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET,
             msg.getFromPeerId());

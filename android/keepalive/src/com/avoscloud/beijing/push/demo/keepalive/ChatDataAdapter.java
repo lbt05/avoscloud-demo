@@ -2,6 +2,8 @@ package com.avoscloud.beijing.push.demo.keepalive;
 
 import java.util.List;
 
+import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,10 +13,10 @@ import android.widget.TextView;
 
 public class ChatDataAdapter extends BaseAdapter {
 
-  List<ChatMessage> messages;
+  List<ChatDemoMessage> messages;
   Context mContext;
 
-  public ChatDataAdapter(Context context, List<ChatMessage> messages) {
+  public ChatDataAdapter(Context context, List<ChatDemoMessage> messages) {
     this.messages = messages;
     this.mContext = context;
   };
@@ -26,7 +28,7 @@ public class ChatDataAdapter extends BaseAdapter {
   }
 
   @Override
-  public Object getItem(int position) {
+  public ChatDemoMessage getItem(int position) {
     return messages.get(position);
   }
 
@@ -42,15 +44,15 @@ public class ChatDataAdapter extends BaseAdapter {
 
   @Override
   public int getItemViewType(int position) {
-    return messages.get(position).getType();
+    return messages.get(position).getMessageType().getType();
   }
 
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
     ViewHolder holder = null;
-    final ChatMessage m = (ChatMessage) getItem(position);
+    final ChatDemoMessage m = getItem(position);
     switch (getItemViewType(position)) {
-      case 0:
+      case -1:
         if (convertView == null) {
           convertView = LayoutInflater.from(mContext).inflate(R.layout.item_info, null);
           holder = new ViewHolder();
@@ -60,7 +62,7 @@ public class ChatDataAdapter extends BaseAdapter {
           holder = (ViewHolder) convertView.getTag();
         }
         break;
-      case 1:
+      case 0:
         if (convertView == null) {
           convertView = LayoutInflater.from(mContext).inflate(R.layout.item_message, null);
           holder = new ViewHolder();
@@ -70,10 +72,10 @@ public class ChatDataAdapter extends BaseAdapter {
         } else {
           holder = (ViewHolder) convertView.getTag();
         }
-        holder.username.setText(m.getUsername());
+        holder.username.setText(m.getMessageFrom());
         break;
     }
-    holder.message.setText(m.getMessage());
+    holder.message.setText(m.getMessageContent());
     return convertView;
   }
 

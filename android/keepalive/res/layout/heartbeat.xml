@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
-    <ListView
-        android:id="@+id/avoscloud_chat_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:divider="#fff"
-        android:dividerHeight="0dp" >
-    </ListView>
-
     <LinearLayout
+        android:id="@+id/chat_input_wrapper"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|bottom"
+        android:layout_alignParentBottom="true"
         android:orientation="horizontal" >
+
+        <ImageButton
+            android:id="@+id/chatPlus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:src="@android:drawable/ic_input_add" >
+        </ImageButton>
 
         <EditText
             android:id="@+id/chatText"
@@ -33,4 +34,13 @@
             android:src="@android:drawable/ic_menu_send" />
     </LinearLayout>
 
-</FrameLayout>
+    <ListView
+        android:id="@+id/avoscloud_chat_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/chat_input_wrapper"
+        android:divider="#fff"
+        android:dividerHeight="0dp" >
+    </ListView>
+
+</RelativeLayout>

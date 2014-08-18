@@ -1,10 +1,13 @@
 package com.avoscloud.beijing.push.demo.keepalive;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import android.app.Application;
 import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVOSCloud;
+import com.avos.avoscloud.LogUtil;
+import com.avos.avoscloud.PushService;
 
 /**
  * Created by nsun on 4/28/14.
@@ -12,6 +15,7 @@ import com.avos.avoscloud.AVOSCloud;
 public class HTBApplication extends Application {
 
   private static HashMap<String, String> userNameCache = new HashMap<String, String>();
+
   @Override
   public void onCreate() {
     super.onCreate();
@@ -21,6 +25,17 @@ public class HTBApplication extends Application {
         "i5gxt9tgr80vbavd790hhlfmmphpl7052iiirg379p14rwsu");
     AVOSCloud.showInternalDebugLog();
     AVInstallation.getCurrentInstallation().saveInBackground();
+    PushService.setDefaultPushCallback(this, MainActivity.class);
+
+    try {
+      Class<?> avosclass = Class.forName("com.avos.avoscloud.AVOSCloud");
+      Method enableLogMethod = avosclass.getDeclaredMethod("showInternalDebugLog", boolean.class);
+      enableLogMethod.setAccessible(true);
+      enableLogMethod.invoke(avosclass, true);
+      LogUtil.avlog.i("successed enable avoscloud logs");
+    } catch (Exception e) {
+      LogUtil.avlog.i("failed enable avoscloud logs");
+    }
 
   }
 
