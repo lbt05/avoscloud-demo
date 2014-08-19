@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSONObject;
 import com.avos.avoscloud.*;
 
 public class PushDemo extends Activity {
@@ -69,6 +70,34 @@ public class PushDemo extends Activity {
           }
         });
 
+      }
+    });
+
+    View customPushButton = this.findViewById(R.id.customPush);
+    customPushButton.setOnClickListener(new View.OnClickListener() {
+
+      @Override
+      public void onClick(View v) {
+        AVPush push = new AVPush();
+
+        AVQuery<AVInstallation> query = AVInstallation.getQuery();
+        query.whereEqualTo("installationId", AVInstallation.getCurrentInstallation()
+            .getInstallationId());
+        push.setQuery(query);
+        push.setChannel(channelEdit.getText().toString().trim());
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("action", "com.pushdemo.action");
+        jsonObject.put("alert", msgEdit.getText().toString().trim());
+
+        push.setData(jsonObject);
+        push.setPushToAndroid(true);
+        push.sendInBackground(new SendCallback() {
+          @Override
+          public void done(AVException e) {
+            Toast.makeText(getApplicationContext(), "send successfully", Toast.LENGTH_SHORT);
+          }
+        });
       }
     });
   }
