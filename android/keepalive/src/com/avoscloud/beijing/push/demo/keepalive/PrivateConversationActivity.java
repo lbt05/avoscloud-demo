@@ -1,5 +1,6 @@
 package com.avoscloud.beijing.push.demo.keepalive;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -9,8 +10,12 @@ import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVUtils;
 import com.avos.avoscloud.Session;
 import com.avos.avoscloud.SessionManager;
+import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage;
+import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage.MessageType;
+import com.avoscloud.beijing.push.demo.keepalive.util.RecordUtil;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -18,6 +23,7 @@ import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 
 public class PrivateConversationActivity extends Activity
     implements
@@ -27,12 +33,13 @@ public class PrivateConversationActivity extends Activity
 
   String targetPeerId;
   private ImageButton sendBtn;
+  private ImageButton addBtn;
   private EditText composeZone;
   String currentName;
   String selfId;
   ListView chatList;
   ChatDataAdapter adapter;
-  List<ChatMessage> messages = new LinkedList<ChatMessage>();
+  List<ChatDemoMessage> messages = new LinkedList<ChatDemoMessage>();
   Session session;
 
   @Override
@@ -49,16 +56,27 @@ public class PrivateConversationActivity extends Activity
     adapter = new ChatDataAdapter(this, messages);
     chatList.setAdapter(adapter);
     sendBtn = (ImageButton) this.findViewById(R.id.sendBtn);
+    addBtn = (ImageButton) this.findViewById(R.id.chatPlus);
     composeZone = (EditText) this.findViewById(R.id.chatText);
     selfId = AVInstallation.getCurrentInstallation().getInstallationId();
     currentName = HTBApplication.lookupname(selfId);
     session = SessionManager.getInstance(selfId);
     sendBtn.setOnClickListener(this);
 
+    addBtn.setOnClickListener(new OnClickListener() {
+
+      @Override
+      public void onClick(View v) {
+        Point p = new Point(0, 0);
+
+        new RecordUtil(PrivateConversationActivity.this).showRecordWindows(p, null);
+      }
+    });
+
     if (!AVUtils.isBlankString(getIntent().getExtras()
         .getString(Session.AV_SESSION_INTENT_DATA_KEY))) {
       String msg = getIntent().getExtras().getString(Session.AV_SESSION_INTENT_DATA_KEY);
-      ChatMessage message = JSON.parseObject(msg, ChatMessage.class);
+      ChatDemoMessage message = JSON.parseObject(msg, ChatDemoMessage.class);
       messages.add(message);
       adapter.notifyDataSetChanged();
     }
@@ -72,26 +90,18 @@ public class PrivateConversationActivity extends Activity
       return;
     }
 
-    session.sendMessage(makeMessage(text), session.getAllPeers());
 
     composeZone.getEditableText().clear();
-    ChatMessage message = new ChatMessage();
-    message.setMessage(text);
-    message.setType(1);
-    message.setUsername(currentName);
+    ChatDemoMessage message = new ChatDemoMessage();
+    message.setMessageContent(text);
+    message.setMessageType(MessageType.Text);
+    message.setMessageFrom(currentName);
+    message.setToPeerIds(Arrays.asList(targetPeerId));
+    session.sendMessage(message.makeMessage());
+
     messages.add(message);
     adapter.notifyDataSetChanged();
   }
-
-
-  private String makeMessage(String msg) {
-    JSONObject obj = new JSONObject();
-    obj.put("msg", msg);
-    obj.put("dn", currentName);
-
-    return obj.toJSONString();
-  }
-
 
   @Override
   public void onBackPressed() {
@@ -113,7 +123,7 @@ public class PrivateConversationActivity extends Activity
 
   @Override
   public void onMessage(String msg) {
-    ChatMessage message = JSON.parseObject(msg, ChatMessage.class);
+    ChatDemoMessage message = JSON.parseObject(msg, ChatDemoMessage.class);
     messages.add(message);
     adapter.notifyDataSetChanged();
   }

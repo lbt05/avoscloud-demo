@@ -1,9 +1,7 @@
 package com.avoscloud.beijing.push.demo.keepalive;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -14,14 +12,15 @@ import android.graphics.BitmapFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.avos.avoscloud.AVMessage;
 import com.avos.avoscloud.AVMessageReceiver;
 import com.avos.avoscloud.LogUtil;
 import com.avos.avoscloud.Session;
 import com.avos.avospush.notification.NotificationCompat;
+import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage;
 
 public class ChatDemoMessageReceiver extends AVMessageReceiver {
 
-  private final Queue<String> failedMessage = new LinkedList<String>();
 
   @Override
   public void onSessionOpen(Context context, Session session) {
@@ -37,18 +36,13 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
   @Override
   public void onSessionResumed(Context context, Session session) {
     LogUtil.avlog.d("重新连接上了");
-    while (!failedMessage.isEmpty()) {
-      String msg = failedMessage.poll();
-
-      session.sendMessage(msg, session.getAllPeers(), false);
-    }
   }
 
   @Override
-  public void onMessage(Context context, Session session, String msg, String fromPeerId) {
-    JSONObject j = JSONObject.parseObject(msg);
-    ChatMessage message = new ChatMessage();
-    MessageListener listener = sessionMessageDispatchers.get(fromPeerId);
+  public void onMessage(Context context, Session session, AVMessage msg) {
+    JSONObject j = JSONObject.parseObject(msg.getMessage());
+    ChatDemoMessage message = new ChatDemoMessage();
+    MessageListener listener = sessionMessageDispatchers.get(msg.getFromPeerId());
     /*
      * 这里是demo中自定义的数据格式，在你自己的实现中，可以完全自由的通过json来定义属于你自己的消息格式
      * 
@@ -57,11 +51,9 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
      * 用户的状态消息 {"st":"用户触发的状态信息","dn":"这是消息来源者的名字"}
      */
 
-    if (j.containsKey("msg")) {
+    if (j.containsKey("content")) {
 
-      message.setMessage(j.getString("msg"));
-      message.setType(1);
-      message.setUsername(j.getString("dn"));
+      message.fromAVMessage(msg);
       // 如果Activity在屏幕上不是active的时候就选择发送 通知
 
       if (listener == null) {
@@ -69,10 +61,10 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
         NotificationManager nm =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        String ctnt = j.getString("dn") + "：" + j.getString("msg");
+        String ctnt = message.getMessageFrom() + "：" + message.getMessageContent();
         Intent resultIntent = new Intent(context, PrivateConversationActivity.class);
         resultIntent.putExtra(PrivateConversationActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET,
-            fromPeerId);
+            msg.getFromPeerId());
         resultIntent.putExtra(Session.AV_SESSION_INTENT_DATA_KEY, JSON.toJSONString(message));
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 
@@ -97,14 +89,13 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
   }
 
   @Override
-  public void onMessageSent(Context context, Session session, String msg, List<String> receivers) {
+  public void onMessageSent(Context context, Session session, AVMessage msg) {
     LogUtil.avlog.d("message sent :" + msg);
   }
 
   @Override
-  public void onMessageFailure(Context context, Session session, String msg, List<String> receivers) {
-    LogUtil.avlog.d("message failed :" + msg);
-    this.failedMessage.offer(msg);
+  public void onMessageFailure(Context context, Session session, AVMessage msg) {
+    LogUtil.avlog.d("message failed :" + msg.getMessage());
   }
 
   @Override

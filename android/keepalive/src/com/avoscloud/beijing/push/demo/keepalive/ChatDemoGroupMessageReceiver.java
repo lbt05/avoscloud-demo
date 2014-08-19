@@ -13,10 +13,12 @@ import android.graphics.BitmapFactory;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.avos.avoscloud.AVGroupMessageReceiver;
+import com.avos.avoscloud.AVMessage;
 import com.avos.avoscloud.Group;
 import com.avos.avoscloud.LogUtil;
 import com.avos.avoscloud.Session;
 import com.avos.avospush.notification.NotificationCompat;
+import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage;
 
 public class ChatDemoGroupMessageReceiver extends AVGroupMessageReceiver {
 
@@ -41,19 +43,19 @@ public class ChatDemoGroupMessageReceiver extends AVGroupMessageReceiver {
   }
 
   @Override
-  public void onMessageSent(Context context, Group group, String message) {
-    LogUtil.avlog.d(message + " sent");
+  public void onMessageSent(Context context, Group group, AVMessage message) {
+    LogUtil.avlog.d(message.getMessage() + " sent");
   }
 
   @Override
-  public void onMessageFailure(Context context, Group group, String message) {
-    LogUtil.avlog.d(message + " failure");
+  public void onMessageFailure(Context context, Group group, AVMessage message) {
+    LogUtil.avlog.d(message.getMessage() + " failure");
   }
 
   @Override
-  public void onMessage(Context context, Group group, String msg, String fromPeerId) {
-    JSONObject j = JSONObject.parseObject(msg);
-    ChatMessage message = new ChatMessage();
+  public void onMessage(Context context, Group group, AVMessage msg) {
+    JSONObject j = JSONObject.parseObject(msg.getMessage());
+    ChatDemoMessage message = new ChatDemoMessage();
     MessageListener listener = groupMessageDispatchers.get(group.getGroupId());
     /*
      * 这里是demo中自定义的数据格式，在你自己的实现中，可以完全自由的通过json来定义属于你自己的消息格式
@@ -63,11 +65,9 @@ public class ChatDemoGroupMessageReceiver extends AVGroupMessageReceiver {
      * 用户的状态消息 {"st":"用户触发的状态信息","dn":"这是消息来源者的名字"}
      */
 
-    if (j.containsKey("msg")) {
+    if (j.containsKey("content")) {
 
-      message.setMessage(j.getString("msg"));
-      message.setType(1);
-      message.setUsername(j.getString("dn"));
+      message.fromAVMessage(msg);
       // 如果Activity在屏幕上不是active的时候就选择发送 通知
 
       if (listener == null) {
@@ -75,10 +75,10 @@ public class ChatDemoGroupMessageReceiver extends AVGroupMessageReceiver {
         NotificationManager nm =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        String ctnt = j.getString("dn") + "：" + j.getString("msg");
+        String ctnt = message.getMessageFrom() + "：" + message.getMessageContent();
         Intent resultIntent = new Intent(context, GroupChatActivity.class);
-        resultIntent.putExtra(PrivateConversationActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET,
-            fromPeerId);
+        resultIntent
+            .putExtra(GroupChatActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET, group.getGroupId());
         resultIntent.putExtra(Session.AV_SESSION_INTENT_DATA_KEY, JSON.toJSONString(message));
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
 

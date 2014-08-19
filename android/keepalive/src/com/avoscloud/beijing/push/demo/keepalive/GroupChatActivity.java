@@ -15,6 +15,8 @@ import com.avos.avoscloud.GetCallback;
 import com.avos.avoscloud.Group;
 import com.avos.avoscloud.Session;
 import com.avos.avoscloud.SessionManager;
+import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage;
+import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage.MessageType;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -38,7 +40,7 @@ public class GroupChatActivity extends Activity implements OnClickListener, Mess
 
   ListView chatList;
   ChatDataAdapter adapter;
-  List<ChatMessage> messages = new LinkedList<ChatMessage>();
+  List<ChatDemoMessage> messages = new LinkedList<ChatDemoMessage>();
   Group group;
   String selfId;
 
@@ -65,7 +67,7 @@ public class GroupChatActivity extends Activity implements OnClickListener, Mess
     if (!AVUtils.isBlankString(getIntent().getExtras()
         .getString(Session.AV_SESSION_INTENT_DATA_KEY))) {
       String msg = getIntent().getExtras().getString(Session.AV_SESSION_INTENT_DATA_KEY);
-      ChatMessage message = JSON.parseObject(msg, ChatMessage.class);
+      ChatDemoMessage message = JSON.parseObject(msg, ChatDemoMessage.class);
       messages.add(message);
       adapter.notifyDataSetChanged();
     }
@@ -78,13 +80,12 @@ public class GroupChatActivity extends Activity implements OnClickListener, Mess
     if (TextUtils.isEmpty(text)) {
       return;
     }
-    group.sendMessage(makeMessage(text));
-
     composeZone.getEditableText().clear();
-    ChatMessage message = new ChatMessage();
-    message.setMessage(text);
-    message.setType(1);
-    message.setUsername(currentName);
+    ChatDemoMessage message = new ChatDemoMessage();
+    message.setMessageContent(text);
+    message.setMessageType(MessageType.Text);
+    message.setMessageFrom(currentName);
+    group.sendMessage(message.makeMessage());
     messages.add(message);
     adapter.notifyDataSetChanged();
   }
@@ -163,7 +164,7 @@ public class GroupChatActivity extends Activity implements OnClickListener, Mess
 
   @Override
   public void onMessage(String msg) {
-    ChatMessage message = JSON.parseObject(msg, ChatMessage.class);
+    ChatDemoMessage message = JSON.parseObject(msg, ChatDemoMessage.class);
     messages.add(message);
     adapter.notifyDataSetChanged();
 
