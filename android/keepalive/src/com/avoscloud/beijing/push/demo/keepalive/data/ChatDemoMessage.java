@@ -9,7 +9,7 @@ import com.avos.avoscloud.AVUtils;
 
 public class ChatDemoMessage {
   public enum MessageType {
-    Status(-1), Text(0), Image(1), Audio(2);
+    Status(0), Text(1), Image(2), Audio(3);
 
     private final int type;
 

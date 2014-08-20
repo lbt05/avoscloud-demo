@@ -1,13 +1,18 @@
 package com.avoscloud.beijing.push.demo.keepalive;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVFile;
 import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVUtils;
+import com.avos.avoscloud.SaveCallback;
 import com.avos.avoscloud.Session;
 import com.avos.avoscloud.SessionManager;
 import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage;
@@ -23,7 +28,8 @@ import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.PopupWindow;
+
+import com.avoscloud.beijing.push.demo.keepalive.util.RecordUtil.FileCallback;
 
 public class PrivateConversationActivity extends Activity
     implements
@@ -64,12 +70,17 @@ public class PrivateConversationActivity extends Activity
     sendBtn.setOnClickListener(this);
 
     addBtn.setOnClickListener(new OnClickListener() {
-
       @Override
       public void onClick(View v) {
         Point p = new Point(0, 0);
-
-        new RecordUtil(PrivateConversationActivity.this).showRecordWindows(p, null);
+        new RecordUtil(PrivateConversationActivity.this).showRecordWindows(p, new FileCallback() {
+          @Override
+          public void onFileReady(File file, AVException e) {
+            if (e == null) {
+              sendFileAsMessage(file, MessageType.Audio);
+            }
+          }
+        });
       }
     });
 
@@ -79,6 +90,33 @@ public class PrivateConversationActivity extends Activity
       ChatDemoMessage message = JSON.parseObject(msg, ChatDemoMessage.class);
       messages.add(message);
       adapter.notifyDataSetChanged();
+    }
+  }
+
+  public void sendFileAsMessage(final File file, final MessageType type) {
+    try {
+      final AVFile avFile = AVFile.withFile(file.getName(), file);
+      avFile.saveInBackground(new SaveCallback() {
+
+        @Override
+        public void done(AVException e) {
+          if (e == null) {
+            ChatDemoMessage msg = new ChatDemoMessage();
+            msg.setMessageType(type);
+            msg.setMessageFrom(currentName);
+            msg.setMessageContent(avFile.getUrl());
+            msg.setToPeerIds(Arrays.asList(targetPeerId));
+            messages.add(msg);
+            adapter.notifyDataSetChanged();
+            session.sendMessage(msg.makeMessage());
+            RecordUtil.moveFile(file, AVUtils.md5(avFile.getUrl()), MessageType.Audio);
+          }
+        }
+      });
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
