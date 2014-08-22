@@ -32,6 +32,15 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.view.View.OnTouchListener;
 
+/**
+ * 请妥善阅读此段代码
+ * 
+ * 由于此段代码仅仅是作为demo使用，在聊天记录，语音、视频、图片等信息保存本地过程中并没有进行严格的信息加密处理。如果您将此段代码复用到生产环境中，并且由此引发的信息安全问题和相关责任，
+ * 本人及AVOS Cloud概不负责。请慎重使用本代码
+ * 
+ * @author lbt05
+ * 
+ */
 @SuppressLint("NewApi")
 public class RecordUtil {
 

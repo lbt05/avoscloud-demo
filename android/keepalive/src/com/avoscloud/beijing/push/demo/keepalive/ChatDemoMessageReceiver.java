@@ -18,6 +18,8 @@ import com.avos.avoscloud.LogUtil;
 import com.avos.avoscloud.Session;
 import com.avos.avospush.notification.NotificationCompat;
 import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage;
+import com.avoscloud.beijing.push.demo.keepalive.data.ChatDemoMessage.MessageType;
+import com.avoscloud.beijing.push.demo.keepalive.data.LocalMessageQueue;
 
 public class ChatDemoMessageReceiver extends AVMessageReceiver {
 
@@ -54,6 +56,7 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
     if (j.containsKey("content")) {
 
       message.fromAVMessage(msg);
+      LogUtil.avlog.d("msg type:" + message.getMessageType());
       // 如果Activity在屏幕上不是active的时候就选择发送 通知
 
       if (listener == null) {
@@ -61,7 +64,15 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
         NotificationManager nm =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        String ctnt = message.getMessageFrom() + "：" + message.getMessageContent();
+        String ctnt = null;
+        if (MessageType.Audio.equals(message.getMessageType())) {
+          ctnt = message.getMessageFrom() + " sent you an audio message";
+        } else if (MessageType.Image.equals(message.getMessageType())) {
+          ctnt = message.getMessageFrom() + " sent you an image message";
+        } else if (MessageType.Text.equals(message.getMessageType())) {
+          ctnt = message.getMessageFrom() + "：" + message.getMessageContent();
+        }
+
         Intent resultIntent = new Intent(context, PrivateConversationActivity.class);
         resultIntent.putExtra(PrivateConversationActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET,
             msg.getFromPeerId());
@@ -81,7 +92,8 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
                     BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher))
                 .setAutoCancel(true).build();
         nm.notify(233, notification);
-        LogUtil.avlog.d("notification sent");
+        new LocalMessageQueue(PrivateConversationActivity.getPrivateConversationId(
+            session.getSelfPeerId(), msg.getFromPeerId())).add(message);
       } else {
         listener.onMessage(JSON.toJSONString(message));
       }
