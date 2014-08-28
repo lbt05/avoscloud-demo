@@ -8,6 +8,7 @@ import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVUser;
 import com.avos.avoscloud.FindCallback;
 import com.avos.avoscloud.Group;
 import com.avos.avoscloud.SessionManager;
@@ -45,7 +46,7 @@ public class ChatGroupListFragment extends Fragment {
     View rootView = inflater.inflate(R.layout.onlinelist, null);
     groupList = (ListView) rootView.findViewById(R.id.onlineList);
     joinGroup = rootView.findViewById(R.id.add_new);
-    selfId = AVInstallation.getCurrentInstallation().getInstallationId();
+    selfId = AVUser.getCurrentUser().getObjectId();
     joinGroup.setOnClickListener(new View.OnClickListener() {
 
       @Override
@@ -138,8 +139,7 @@ public class ChatGroupListFragment extends Fragment {
     @Override
     public void onItemClick(AdapterView<?> adapterView, View v, int position, long itemId) {
       String groupId = this.getItem(position);
-      SessionManager.getInstance(AVInstallation.getCurrentInstallation().getInstallationId())
-          .getGroup(groupId).join();
+      SessionManager.getInstance(AVUser.getCurrentUser().getObjectId()).getGroup(groupId).join();
     }
   }
 }

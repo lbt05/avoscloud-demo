@@ -9,6 +9,7 @@ import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVUser;
 import com.avos.avoscloud.AVUtils;
 import com.avos.avoscloud.FindCallback;
 import com.avos.avoscloud.GetCallback;
@@ -57,7 +58,7 @@ public class GroupChatActivity extends Activity implements OnClickListener, Mess
     chatList.setAdapter(adapter);
     sendBtn = (ImageButton) this.findViewById(R.id.sendBtn);
     composeZone = (EditText) this.findViewById(R.id.chatText);
-    selfId = AVInstallation.getCurrentInstallation().getInstallationId();
+    selfId = AVUser.getCurrentUser().getObjectId();
     currentName = HTBApplication.lookupname(selfId);
     group = SessionManager.getInstance(selfId).getGroup(groupId);
 

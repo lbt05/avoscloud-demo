@@ -2,6 +2,8 @@ package com.avoscloud.beijing.push.demo.keepalive;
 
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.avos.avoscloud.LogUtil;
 import com.avos.avoscloud.Signature;
 import com.avos.avoscloud.SignatureFactory;
 
@@ -27,7 +29,8 @@ public class KeepAliveSignatureFactory implements SignatureFactory {
 
   private final String selfPeerId;
 
-  private static final String SUPER_POWER_KEY = "Your app master key";
+  private static final String SUPER_POWER_KEY = "7it9yc8ixcyjzgbgz61gbdzclm098mbuxqoizmuar42bq7f1";// 这里是你的master
+                                                                                                   // Key，拥有这个key的人可以做任何事情！！！你的app将不属于你！！
 
   public KeepAliveSignatureFactory(String appId, String selfPeerId) {
     this.appId = appId;
@@ -64,9 +67,9 @@ public class KeepAliveSignatureFactory implements SignatureFactory {
      * 
      * 在真实的产品中间，请尽量使用服务器端数据，完成这一步signature赋值操作，以保证服务器安全性
      */
+
     String sig = hmacSHA1(TextUtils.join(":", signatureElements), SUPER_POWER_KEY);
     s.setSignature(sig);
-
     return s;
   }
 
@@ -126,22 +129,23 @@ public class KeepAliveSignatureFactory implements SignatureFactory {
 
     signatureElements.add(groupId);
 
-    signatureElements.add(action);
-
     signatureElements.add(TextUtils.join(":", watchIdsCopy));
 
     signatureElements.add(String.valueOf(timestamp));
 
     signatureElements.add(nonce);
 
+    signatureElements.add(action);
+
     /*
      * 此处请一定不要直接复制黏贴到您的代码中
      * 
      * 在真实的产品中间，请尽量使用服务器端数据，完成这一步signature赋值操作，以保证服务器安全性
      */
+    LogUtil.avlog.d(signatureElements.toString());
     String sig = hmacSHA1(TextUtils.join(":", signatureElements), SUPER_POWER_KEY);
     s.setSignature(sig);
-
+    LogUtil.avlog.d("signature :" + sig);
     return s;
   }
 

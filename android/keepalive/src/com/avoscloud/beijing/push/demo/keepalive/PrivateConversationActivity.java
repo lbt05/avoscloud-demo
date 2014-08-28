@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVFile;
 import com.avos.avoscloud.AVInstallation;
+import com.avos.avoscloud.AVUser;
 import com.avos.avoscloud.AVUtils;
 import com.avos.avoscloud.LogUtil;
 import com.avos.avoscloud.SaveCallback;
@@ -72,7 +73,8 @@ public class PrivateConversationActivity extends Activity
     this.setContentView(R.layout.heartbeat);
     targetPeerId = this.getIntent().getStringExtra(DATA_EXTRA_SINGLE_DIALOG_TARGET);
     this.setTitle(HTBApplication.lookupname(targetPeerId));
-    selfId = AVInstallation.getCurrentInstallation().getInstallationId();
+    selfId = AVUser.getCurrentUser().getObjectId();
+    currentName = HTBApplication.lookupname(selfId);
     messages = new LocalMessageQueue(getPrivateConversationId(selfId, targetPeerId));
     // 您可以在这里读取本地的聊天记录，并且加载进来。
     // 　我们会在未来加入这些代码
@@ -88,7 +90,6 @@ public class PrivateConversationActivity extends Activity
     picButton = this.findViewById(R.id.chat_pic_btn);
     moreFuncView = this.findViewById(R.id.chat_more_wrapper);
 
-    currentName = HTBApplication.lookupname(selfId);
     session = SessionManager.getInstance(selfId);
     sendBtn.setOnClickListener(this);
 
