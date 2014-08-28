@@ -27,11 +27,12 @@
         android:paddingLeft="15dp"
         android:paddingRight="15dp" >
 
-        <TextView
-            android:id="@+id/avoscloud_chat_demo_message"
+        <ImageView
+            android:id="@+id/avoscloud_chat_demo_audio_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingBottom="5dp"
+            android:padding="10dp"
+            android:src="@drawable/audio_play"
             android:textColor="#333"
             android:textSize="18sp" />
 
@@ -43,4 +44,5 @@
             android:textSize="12sp" >
         </TextView>
     </LinearLayout>
+
 </RelativeLayout>

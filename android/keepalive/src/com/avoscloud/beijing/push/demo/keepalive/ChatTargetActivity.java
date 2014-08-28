@@ -1,8 +1,5 @@
 package com.avoscloud.beijing.push.demo.keepalive;
 
-import com.avos.avoscloud.AVInstallation;
-import com.avos.avoscloud.SessionManager;
-
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -28,14 +25,6 @@ public class ChatTargetActivity extends FragmentActivity {
     pagerTabStrip = (PagerTabStrip) findViewById(R.id.pager_tab_strip);
     pagerTabStrip.setTabIndicatorColorResource(R.color.avoscloud_tab_indicator_color);
     pagerTabStrip.setTextColor(getResources().getColor(R.color.avoscloud_tab_text_color));
-  }
-
-  @Override
-  public void onBackPressed() {
-
-    SessionManager.getInstance(AVInstallation.getCurrentInstallation().getInstallationId()).close();
-    super.onBackPressed();
-
   }
 
   public class ChatTargetFragmentAdapter extends FragmentStatePagerAdapter {

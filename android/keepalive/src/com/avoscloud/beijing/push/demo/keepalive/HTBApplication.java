@@ -1,13 +1,14 @@
 package com.avoscloud.beijing.push.demo.keepalive;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 
 import android.app.Application;
 import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVOSCloud;
-import com.avos.avoscloud.LogUtil;
 import com.avos.avoscloud.PushService;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 
 /**
  * Created by nsun on 4/28/14.
@@ -27,16 +28,12 @@ public class HTBApplication extends Application {
     AVInstallation.getCurrentInstallation().saveInBackground();
     PushService.setDefaultPushCallback(this, MainActivity.class);
 
-    try {
-      Class<?> avosclass = Class.forName("com.avos.avoscloud.AVOSCloud");
-      Method enableLogMethod = avosclass.getDeclaredMethod("showInternalDebugLog", boolean.class);
-      enableLogMethod.setAccessible(true);
-      enableLogMethod.invoke(avosclass, true);
-      LogUtil.avlog.i("successed enable avoscloud logs");
-    } catch (Exception e) {
-      LogUtil.avlog.i("failed enable avoscloud logs");
-    }
-
+    ImageLoaderConfiguration config =
+        new ImageLoaderConfiguration.Builder(this).threadPriority(Thread.NORM_PRIORITY - 2)
+            .denyCacheImageMultipleSizesInMemory().diskCacheSize(50 * 1024 * 1024)
+            .tasksProcessingOrder(QueueProcessingType.LIFO)
+            .build();
+    ImageLoader.getInstance().init(config);
   }
 
   public static String lookupname(String peerId) {

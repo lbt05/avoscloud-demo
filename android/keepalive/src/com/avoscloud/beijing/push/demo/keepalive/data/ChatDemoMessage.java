@@ -9,7 +9,7 @@ import com.avos.avoscloud.AVUtils;
 
 public class ChatDemoMessage {
   public enum MessageType {
-    Status(-1), Text(0), Image(1), Audio(2);
+    Status(0), Text(1), Image(2), Audio(3);
 
     private final int type;
 
@@ -25,6 +25,7 @@ public class ChatDemoMessage {
   MessageType messageType;
   String messageContent;
   String messageFrom;
+  private String localPath;
   AVMessage internalMessage;
 
   public ChatDemoMessage() {
@@ -69,6 +70,14 @@ public class ChatDemoMessage {
 
   public List<String> getToPeerIds() {
     return this.internalMessage.getToPeerIds();
+  }
+
+  public String getLocalPath() {
+    return localPath;
+  }
+
+  public void setLocalPath(String localPath) {
+    this.localPath = localPath;
   }
 
   public void fromAVMessage(AVMessage message) {
