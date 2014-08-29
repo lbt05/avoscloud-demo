@@ -70,7 +70,7 @@ public class ChatDemoMessageReceiver extends AVMessageReceiver {
         } else if (MessageType.Image.equals(message.getMessageType())) {
           ctnt = message.getMessageFrom() + " sent you an image message";
         } else if (MessageType.Text.equals(message.getMessageType())) {
-          ctnt = message.getMessageFrom() + "：" + message.getMessageContent();
+          ctnt = message.getMessageFrom() + ":" + message.getMessageContent();
         }
 
         Intent resultIntent = new Intent(context, PrivateConversationActivity.class);

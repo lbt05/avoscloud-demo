@@ -75,7 +75,7 @@ public class ChatDemoGroupMessageReceiver extends AVGroupMessageReceiver {
         NotificationManager nm =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        String ctnt = message.getMessageFrom() + "：" + message.getMessageContent();
+        String ctnt = message.getMessageFrom() + ":" + message.getMessageContent();
         Intent resultIntent = new Intent(context, GroupChatActivity.class);
         resultIntent
             .putExtra(GroupChatActivity.DATA_EXTRA_SINGLE_DIALOG_TARGET, group.getGroupId());
